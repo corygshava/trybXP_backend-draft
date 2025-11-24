@@ -3,24 +3,30 @@ const path = require('path');
 
 const app = express();
 const PORT = 3000;
+const api = require('./apihandler');
+const { error } = require('console');
 
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()); // For POST JSON bodies
 
-// Simple API route
-app.get('/api/data', (req, res) => {
-	res.json({ message: 'Hi welcome to trybXP', timestamp: Date.now() });
-});
-app.get('/api/appdata', (req, res) => {
-	let outdata = {
-		message: 'Hi welcome to trybXP API implementation',
-		success: true, 
-		result: true, 
-		data: {info: "appdata",source: "API"}, 
-		timestamp: Date.now()
+
+// Catch-all for /api/* routes
+app.all('/api/*path', (req, res) => {
+	const thepath = req.params.path; // e.g., 'data'
+	const requestData = { 
+		method: req.method,
+		query: req.query,
+		body: req.body
 	};
 
-	res.json(outdata);
+	try {
+		const result = api(thepath, requestData, req);
+		res.json(result);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ error: 'Internal server error' });
+	}
 });
 
 app.listen(PORT, () => {
