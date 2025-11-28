@@ -1,5 +1,15 @@
+const { request } = require("express");
+
+const request_tmp = {
+	success: false,			// whether authentication was successful
+	result: false,			// whether the operation was successful
+	sendme: {},				// what data to send
+	message: 'Hi welcome to trybXP API implementation',			// message to show status
+	timestamp: Date.now(),
+};
+
 let map = {
-	// path : property (this way i can make a sitemap later)
+	// path : property to launch (this way i can make a sitemap later)
 	'data' : 'getdata',
 	'appdata' : 'appdata',
 };
@@ -10,6 +20,7 @@ function apiHandler(path, requestData,rawrequest) {
 	let runme = map[the_path];
 
 	/*
+	// for debugging purposes
 	return {
 		"path" : the_path,
 		"runme" : runme,
@@ -18,7 +29,7 @@ function apiHandler(path, requestData,rawrequest) {
 	};
 	// */
 
-	// Example: /api/data → path = 'data'
+	// Example: /api/data → the_path = 'data'
 	if(map[the_path] != undefined){
 		if(requestData.method.toLowerCase() == "get"){
 			act = _get[runme];
@@ -43,20 +54,24 @@ _get['getdata'] = (rdata,req) => {
 };
 
 _get['appdata'] = (rdata,req) => {
-	let outdata = {
-		message: 'Hi welcome to trybXP API implementation',
-		success: true, 
-		result: true, 
-		data: {info: "appdata",source: "API"}, 
-		timestamp: Date.now()
-	};
+	let res = {...request_tmp};
 
-	return outdata;
+	res.success = true;
+	res.result = true;
+	res.sendme = {info: "appdata",source: "API"};
+
+	return res;
 }
 
 // post actions
 _post['getdata'] = (rd,rq) => {
-	return {message: "post request successfull"};
+	let res = {...request_tmp};
+
+	res.success = true;
+	res.result = true;
+	res.message = "welcome to trybXP API implementation";
+
+	return res;
 }
 
 module.exports = apiHandler;
