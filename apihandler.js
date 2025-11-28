@@ -15,9 +15,18 @@ let map = {
 };
 
 // Handles all /api/* routes
-function apiHandler(path, requestData,rawrequest) {
-	let the_path = path.join('/');
-	let runme = map[the_path];
+function apiHandler(path, requestData, rawrequest) {
+	// Normalize path: if path is string (single segment) or array (multi-segment)
+	const the_path = Array.isArray(path) ? path.join('/') : path;
+
+	// Log IP and path
+	const ip = rawrequest.ip || 
+				rawrequest.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+				rawrequest.connection?.remoteAddress || 
+				'unknown';
+	console.log(`[${ip}] - ${the_path}`);
+
+	const runme = map[the_path];
 
 	/*
 	// for debugging purposes
@@ -29,16 +38,18 @@ function apiHandler(path, requestData,rawrequest) {
 	};
 	// */
 
-	// Example: /api/data → the_path = 'data'
-	if(map[the_path] != undefined){
-		if(requestData.method.toLowerCase() == "get"){
+	if (map[the_path] !== undefined) {
+		let act;
+		const method = requestData.method.toLowerCase();
+
+		if (method === 'get') {
 			act = _get[runme];
-		} else if(requestData.method.toLowerCase() == "post"){
+		} else if (method === 'post') {
 			act = _post[runme];
 		}
 
-		if(typeof act == "function"){
-			return act(requestData,rawrequest);
+		if (typeof act === 'function') {
+			return act(requestData, rawrequest);
 		}
 	}
 
